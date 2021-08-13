@@ -5,5 +5,23 @@
     "fs": "^0.0.1-security",
     "lodash": "^4.17.21",
     "node-schedule": "^2.0.0"
-  }
+  },
+  "name": "discord-article-bot",
+  "description": "basic bot template with command handler",
+  "version": "1.0.0",
+  "main": "app.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RahulGopathi/discord-article-bot.git"
+  },
+  "author": "Rahul Gopathi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RahulGopathi/discord-article-bot/issues"
+  },
+  "homepage": "https://github.com/RahulGopathi/discord-article-bot#readme"
 }
