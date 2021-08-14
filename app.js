@@ -125,6 +125,14 @@ function fetchRandomArticle(category) {
 
 // resetting schedule after changing timings
 function resetScheduler() {
+  if (rule.minute < 30) {
+    rule.hour = rule.hour - 6;
+    rule.minute = parseInt(rule.minute) + 30;
+  } else {
+    rule.hour = rule.hour - 5;
+    rule.minute = parseInt(rule.minute) - 30;
+  }
+  console.log(rule);
   const job = schedule.scheduleJob(rule, function () {
     articleLink = fetchRandomArticle("WILDCARD");
     client.guilds.cache.each((guild) => {
