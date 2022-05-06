@@ -5,10 +5,16 @@ var _ = require("lodash");
 var cronstrue = require("cronstrue");
 const schedule = require("node-schedule");
 var articles = fs.readFileSync("articles.json");
+const urlMetadata = require('url-metadata');
+const { getPriority } = require("os");
+var s = fs.readFileSync("schedule.json");
+const request = require('request');
+const { url } = require("inspector");
+const {google}= require("googleapis")
 
 // parsing articles.json
 articles = JSON.parse(articles);
-
+s=JSON.parse(s);
 // creating client
 const client = new Discord.Client({
   intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES],
@@ -33,9 +39,10 @@ categoryNames = [
 
 // command message
 var command =
-  "1. **For getting a random article**: ```get article [category]``` " +
+  "1. **For getting a random article**: ```get article [category]```"+
   "\n" +
-  "ex: `get article wildcard`, this will fetch a random article form wildcard category" +
+  "\n" +
+   "ex: `get article wildcard`, this will fetch a random article form wildcard category" +
   "\n" +
   "\n" +
   "Tip: `get article`, this will give you the list of categories available" +
@@ -86,10 +93,23 @@ const exampleEmbed = new Discord.MessageEmbed()
   .setTimestamp()
   .setFooter("Happy Reading", "https://i.imgur.com/vugPtoT.png");
 
+const ArticleEmbed = new Discord.MessageEmbed()
+  .setColor("#242424")
+  .setTitle("Article")
+  .setAuthor(
+    "Buy me a coffee",
+    "https://i.imgur.com/vugPtoT.png",
+    "https://www.buymeacoffee.com/rahulgopathi"
+  )
+  .setThumbnail("https://i.imgur.com/vugPtoT.png")
+  //.setDescription("Here is your Article")
+  .setTimestamp()
+  .setFooter("Happy Reading", "https://i.imgur.com/vugPtoT.png");
+
 const rule = new schedule.RecurrenceRule();
 rule.dayOfWeek = [0, new schedule.Range(0, 6)];
 rule.hour = 10;
-rule.minute = 00;
+rule.minute = 0;
 var startDay = 0;
 var endDay = 6;
 
@@ -100,8 +120,14 @@ var dailyUpdatesChannel = null;
 
 // fetching random article
 function fetchRandomArticle(category) {
-  var numberofArticles = articles[category].length;
-  var randomArticlePosition = Math.floor(Math.random() * numberofArticles);
+  numberofArticles = articles[category].length;
+  randomArticlePosition = Math.floor(Math.random() * numberofArticles);
+  ArticleEmbed.addFields(
+       {
+         name: articles[category][randomArticlePosition]["Article Title"][0],
+         value: articles[category][randomArticlePosition]["Learning"],
+       }
+     )
   article = articles[category][randomArticlePosition];
   if (category == "WILDCARD") {
     try {
@@ -126,11 +152,11 @@ function fetchRandomArticle(category) {
 // resetting schedule after changing timings
 function resetScheduler() {
   if (rule.minute < 30) {
-    rule.hour = rule.hour - 6;
-    rule.minute = parseInt(rule.minute) + 30;
+    rule.hour = rule.hour;
+    rule.minute = parseInt(rule.minute);
   } else {
-    rule.hour = rule.hour - 5;
-    rule.minute = parseInt(rule.minute) - 30;
+    rule.hour = rule.hour;
+    rule.minute = parseInt(rule.minute);
   }
   console.log(rule);
   const job = schedule.scheduleJob(rule, function () {
@@ -154,6 +180,77 @@ function resetScheduler() {
     cronExpression = `${rule.minute} ${rule.hour} * * ${startDay}-${endDay}`;
   });
 }
+
+const imgurl = async (url) => {
+  const response = await urlMetadata(url);
+  return response;
+}
+
+const serviceAccountKeyFile = "./article-bot-database-2c885470e1c3.json";
+const sheetId = '19cKf8XBNbSXiQmfsVFT3F63__e_61H8w6iosU7hIKyM'
+const tabName = 'Sheet1'
+const range = 'A:C'
+const rangeupdate='B1'
+c=1;
+
+async function _getGoogleSheetClient() {
+  const auth = new google.auth.GoogleAuth({
+    keyFile: serviceAccountKeyFile,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
+  const authClient = await auth.getClient();
+  return google.sheets({
+    version: 'v4',
+    auth: authClient,
+  });
+}
+
+async function _readGoogleSheet(googleSheetClient, sheetId, tabName, range) {
+  const res = await googleSheetClient.spreadsheets.values.get({
+    spreadsheetId: sheetId,
+    range: `${tabName}!${range}`,
+  });
+
+  return res.data.values;
+}
+
+async function _writeGoogleSheet(googleSheetClient, sheetId, tabName, range, data) {
+  await googleSheetClient.spreadsheets.values.append({
+    spreadsheetId: sheetId,
+    range: `${tabName}!${range}`,
+    valueInputOption: 'USER_ENTERED',
+    insertDataOption: 'INSERT_ROWS',
+    resource: {
+      "majorDimension": "ROWS",
+      "values": data
+    },
+  })
+}
+
+async function _updateGoogleSheet(googleSheetClient, sheetId, tabName,rangeupdate,data){
+  await googleSheetClient.spreadsheets.values.update({
+    spreadsheetId: sheetId,
+    range: `${tabName}!${rangeupdate}`,
+    valueInputOption: 'USER_ENTERED',
+    resource: {
+      "values": data
+    },
+  })
+}
+
+// async function main() {
+//   // Generating google sheet client
+// const googleSheetClient = await _getGoogleSheetClient();
+
+// const data =await _readGoogleSheet(googleSheetClient, sheetId, tabName, range);
+// console.log(data);
+
+// const dataToBeInserted = [
+//   ["963038028635459624", "10", "30" ]
+// ]
+// await _writeGoogleSheet(googleSheetClient, sheetId, tabName, range, dataToBeInserted);
+// }
+// main()
 
 //Playing Message
 client.on("ready", async () => {
@@ -196,11 +293,25 @@ client.on("message", (msg) => {
         category = msgRecievied.slice(2);
         category = _.upperCase(category.join(" "));
       }
+    if (msgRecievied[2] != "time" && msgRecievied[2] != "Time"){
+      fetchinglink = fetchRandomArticle(category)
+      }
+
       if (categories.includes(category)) {
-        msg.channel.send(fetchRandomArticle(category)).catch((err) => {
-          console.log(err);
-          msg.channel.send("```coudn't fetch the article at the moment :( ```");
+         let finalimg1;
+         const finalimg = imgurl(fetchinglink).then(response => { finalimg1 = response.image});
+        setTimeout(() =>{
+        console.log(finalimg);
+        //ArticleEmbed.setImage(finalimg1.toString());
+        //console.log(image.toString())
+        ArticleEmbed.setImage(finalimg1)
+        ArticleEmbed.setDescription(fetchinglink)
+        msg.channel.send({ embeds: [ArticleEmbed] }).catch((err) => {
+        console.log(err);
+        msg.channel.send("```coudn't fetch the article at the moment :( ```");
         });
+        ArticleEmbed.fields= [];
+        },3000)
       } else {
         if (msgRecievied[2] == "time") {
           msg.channel.send(
@@ -222,7 +333,7 @@ client.on("message", (msg) => {
     correctTimeProvided = false;
     setTimeCommand = msg.content.split(" ");
     if (setTimeCommand[2] == "days") {
-      try {
+      try { 
         if (
           setTimeCommand.lenght !== 5 ||
           setTimeCommand[3] == "" ||
@@ -251,6 +362,41 @@ client.on("message", (msg) => {
             "```Please specify time in [hours]:[minutes] format ```"
           );
         } else {
+          let guildid = msg.guild.id
+          let str_id=guildid.toString()
+          let hour;
+          let minute;
+          async function main() {
+            // Generating google sheet client
+          const googleSheetClient = await _getGoogleSheetClient();
+          
+          const data =await _readGoogleSheet(googleSheetClient, sheetId, tabName, range);
+          rem=0
+          flag=false
+          for(i=1;i<=c;i++)
+          {
+            if (str_id==data[i][0]){
+              rem=i
+              flag=true;
+              console.log("Flag=",flag)
+              break;
+            }
+          }
+          if (flag==false){
+            c=c+1;
+            console.log("c=",c)
+            const dataToBeInserted = [
+            [str_id, time[0], time[1] ]
+          ]
+          await _writeGoogleSheet(googleSheetClient, sheetId, tabName, range, dataToBeInserted);
+          }
+          hour= data[rem][1]
+          minute= data[rem][2]
+          console.log("Hour = "+hour)
+          console.log("Minute = "+minute)
+          console.log(data);
+           }
+          main()
           rule.hour = time[0];
           rule.minute = time[1];
           correctTimeProvided = true;
@@ -268,6 +414,7 @@ client.on("message", (msg) => {
     }
 
     var updatedcronExpression = `${rule.minute} ${rule.hour} * * ${startDay}-${endDay}`;
+    //console.log(updatedcronExpression)
     if (updatedcronExpression !== cronExpression) {
       msg.channel.send(
         "From now the daily article will be coming " +
