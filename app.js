@@ -190,8 +190,6 @@ const serviceAccountKeyFile = "./article-bot-database-2c885470e1c3.json";
 const sheetId = '19cKf8XBNbSXiQmfsVFT3F63__e_61H8w6iosU7hIKyM'
 const tabName = 'Sheet1'
 const range = 'A:C'
-const rangeupdate='B1'
-c=1;
 
 async function _getGoogleSheetClient() {
   const auth = new google.auth.GoogleAuth({
@@ -238,19 +236,61 @@ async function _updateGoogleSheet(googleSheetClient, sheetId, tabName,rangeupdat
   })
 }
 
-// async function main() {
-//   // Generating google sheet client
-// const googleSheetClient = await _getGoogleSheetClient();
+async function main_getarticle(str_id) {
+  // Generating google sheet client
+  const googleSheetClient = await _getGoogleSheetClient();
+  var data_onSheet =await _readGoogleSheet(googleSheetClient, sheetId, tabName, range);
+  idx=0
+  var flag = false
+  data_onSheet.forEach((value,index) => {
+    if (str_id == value[0]){
+      flag = true
+      idx = index
+    }
+  })
+  if (flag){
+    var time_sheet = {
+      hr : data_onSheet[idx][1],
+      min : data_onSheet[idx][2],
+    }
+  }
+  else{
+    var time_sheet = {
+      hr : 10,
+      min : 0,
+    }
+  }
+  return time_sheet;
+}
 
-// const data =await _readGoogleSheet(googleSheetClient, sheetId, tabName, range);
-// console.log(data);
-
-// const dataToBeInserted = [
-//   ["963038028635459624", "10", "30" ]
-// ]
-// await _writeGoogleSheet(googleSheetClient, sheetId, tabName, range, dataToBeInserted);
-// }
-// main()
+async function main_setarticle(str_id,set_hr,set_min) {
+  const googleSheetClient = await _getGoogleSheetClient();
+  var data_onSheet =await _readGoogleSheet(googleSheetClient, sheetId, tabName, range);
+  idx=0
+  var flag = false
+  data_onSheet.forEach((value,index) => {
+    if (str_id == value[0]){
+      flag = true
+      idx = index
+    }
+  })
+  if (flag){
+    if(set_hr != parseInt(data_onSheet[idx][1]) || parseInt(set_min != data_onSheet[idx][2])){
+      row=idx+1
+      rangeupdate = `B${row}`
+      newdata = [
+        [set_hr,set_min]
+      ]
+      await _updateGoogleSheet(googleSheetClient, sheetId, tabName, rangeupdate, newdata)
+    }
+  }
+  else{
+    const dataToBeInserted = [
+       [str_id, set_hr, set_min ]
+      ]
+      await _writeGoogleSheet(googleSheetClient, sheetId, tabName, range, dataToBeInserted);
+  }
+}
 
 //Playing Message
 client.on("ready", async () => {
@@ -314,10 +354,21 @@ client.on("message", (msg) => {
         },3000)
       } else {
         if (msgRecievied[2] == "time") {
+          let hr2;
+          main_getarticle((msg.guild.id).toString()).then(response => { hr2 =  response })
+          setTimeout(()=>{
+          rule.hour = parseInt(hr2.hr);
+          rule.minute = parseInt(hr2.min);
+          },1300)
+          
+          setTimeout(() =>{
+          var cronExpression = `${rule.minute} ${rule.hour} * * ${startDay}-${endDay}`;
           msg.channel.send(
             "The daily article will be coming " +
               cronstrue.toString(cronExpression)
           );
+          },1600)
+          
         } else {
           msg.channel.send(
             "```The specified category doesn't exists. The available categories are:\n" +
@@ -364,39 +415,9 @@ client.on("message", (msg) => {
         } else {
           let guildid = msg.guild.id
           let str_id=guildid.toString()
-          let hour;
-          let minute;
-          async function main() {
-            // Generating google sheet client
-          const googleSheetClient = await _getGoogleSheetClient();
-          
-          const data =await _readGoogleSheet(googleSheetClient, sheetId, tabName, range);
-          rem=0
-          flag=false
-          for(i=1;i<=c;i++)
-          {
-            if (str_id==data[i][0]){
-              rem=i
-              flag=true;
-              console.log("Flag=",flag)
-              break;
-            }
-          }
-          if (flag==false){
-            c=c+1;
-            console.log("c=",c)
-            const dataToBeInserted = [
-            [str_id, time[0], time[1] ]
-          ]
-          await _writeGoogleSheet(googleSheetClient, sheetId, tabName, range, dataToBeInserted);
-          }
-          hour= data[rem][1]
-          minute= data[rem][2]
-          console.log("Hour = "+hour)
-          console.log("Minute = "+minute)
-          console.log(data);
-           }
-          main()
+          set_hr=time[0]
+          set_min=time[1]
+          main_setarticle(str_id,set_hr,set_min)
           rule.hour = time[0];
           rule.minute = time[1];
           correctTimeProvided = true;
@@ -412,9 +433,8 @@ client.on("message", (msg) => {
         "```wrong command :( please type [get help] for the commands```"
       );
     }
-
+    setTimeout(()=>{
     var updatedcronExpression = `${rule.minute} ${rule.hour} * * ${startDay}-${endDay}`;
-    //console.log(updatedcronExpression)
     if (updatedcronExpression !== cronExpression) {
       msg.channel.send(
         "From now the daily article will be coming " +
@@ -428,7 +448,8 @@ client.on("message", (msg) => {
           "```"
       );
     }
-    resetScheduler();
+  },1600)
+    //resetScheduler();
   }
 });
 
