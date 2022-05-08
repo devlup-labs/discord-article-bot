@@ -433,7 +433,7 @@ client.on("message", (msg) => {
         "```wrong command :( please type [get help] for the commands```"
       );
     }
-    setTimeout(()=>{
+
     var updatedcronExpression = `${rule.minute} ${rule.hour} * * ${startDay}-${endDay}`;
     if (updatedcronExpression !== cronExpression) {
       msg.channel.send(
@@ -448,8 +448,7 @@ client.on("message", (msg) => {
           "```"
       );
     }
-  },1600)
-    //resetScheduler();
+    resetScheduler();
   }
 });
 
