@@ -112,3 +112,8 @@ dist
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
+
+.env
+
+#Api credentials
+.article-bot-database-2c885470e1c3 
