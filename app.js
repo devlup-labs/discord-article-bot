@@ -94,19 +94,6 @@ const exampleEmbed = new Discord.MessageEmbed()
   .setTimestamp()
   .setFooter("Happy Reading", "https://i.imgur.com/vugPtoT.png");
 
-const ArticleEmbed = new Discord.MessageEmbed()
-  .setColor("#242424")
-  .setTitle("Article")
-  .setAuthor(
-    "Buy me a coffee",
-    "https://i.imgur.com/vugPtoT.png",
-    "https://www.buymeacoffee.com/rahulgopathi"
-  )
-  .setThumbnail("https://i.imgur.com/vugPtoT.png")
-  //.setDescription("Here is your Article")
-  .setTimestamp()
-  .setFooter("Happy Reading", "https://i.imgur.com/vugPtoT.png");
-
 const rule = new schedule.RecurrenceRule();
 rule.dayOfWeek = [0, new schedule.Range(0, 6)];
 rule.hour = 10;
@@ -128,12 +115,6 @@ var dailyUpdatesChannel = null;
 function fetchRandomArticle(category) {
   numberofArticles = articles[category].length;
   randomArticlePosition = Math.floor(Math.random() * numberofArticles);
-  ArticleEmbed.addFields(
-       {
-         name: articles[category][randomArticlePosition]["Article Title"][0],
-         value: articles[category][randomArticlePosition]["Learning"],
-       }
-     )
   article = articles[category][randomArticlePosition];
   if (category == "WILDCARD") {
     try {
@@ -195,7 +176,7 @@ function resetScheduler() {
             (channel) => channel.name === "readsomethinggreat"
           ) || guild.channels.cache.first();
         if (channel) {
-          channel.send(articleLink);
+          channel.send(articleLink)
           console.log("sent the daily article to channels");
         } else {
           console.log("The server " + guild.name + " has no channels.");
@@ -206,11 +187,6 @@ function resetScheduler() {
     });
     cronExpression = `${rule.minute} ${rule.hour} * * ${startDay}-${endDay} `;
   });
-}
-
-const imgurl = async (url) => {
-  const response = await urlMetadata(url);
-  return response;
 }
 
 const serviceAccountKeyFile = "./article-bot-database-2c885470e1c3.json";
@@ -362,20 +338,8 @@ client.on("message", (msg) => {
         category = msgRecievied.slice(2);
         category = _.upperCase(category.join(" "));
       }
-    if (msgRecievied[2] != "time" && msgRecievied[2] != "Time"){
-      fetchinglink = fetchRandomArticle(category)
-      }
-
       if (categories.includes(category)) {
-         let finalimg1;
-         const finalimg = imgurl(fetchinglink).then(response => { finalimg1 = response.image});
-        setTimeout(() =>{
-        console.log(finalimg);
-        //ArticleEmbed.setImage(finalimg1.toString());
-        //console.log(image.toString())
-        ArticleEmbed.setImage(finalimg1)
-        ArticleEmbed.setDescription(fetchinglink)
-        msg.channel.send({ embeds: [ArticleEmbed] })
+        msg.channel.send(fetchRandomArticle(category))
         .then((embed) => {
           embed.react('⬆'),
             embed.react("⬇️")
@@ -384,8 +348,6 @@ client.on("message", (msg) => {
         console.log(err);
         msg.channel.send("```coudn't fetch the article at the moment :( ```");
         });
-        ArticleEmbed.fields= [];
-        },3000)
       } else {
         if (msgRecievied[2] == "time") {
           let hr2;
