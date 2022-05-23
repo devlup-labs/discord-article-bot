@@ -6,7 +6,6 @@ const schedule = require("node-schedule");
 var articles = fs.readFileSync("articles.json");
 const urlMetadata = require('url-metadata');
 const { getPriority } = require("os");
-var s = fs.readFileSync("schedule.json");
 const request = require('request');
 const { url } = require("inspector");
 const {google}= require("googleapis")
@@ -15,7 +14,6 @@ const { scheduleJob } = require("node-schedule");
 
 // parsing articles.json
 articles = JSON.parse(articles);
-s=JSON.parse(s);
 // creating client
 const client = new Discord.Client({
   intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES],
@@ -423,7 +421,7 @@ client.on("message", (msg) => {
           set_hr=time[0]
           set_min=time[1]
           main_setarticle(str_id,set_hr,set_min)
-          displayDailyArticleTime = false;
+          displayDailyArticleTime = true;
           rule.hour = time[0];
           rule.minute = time[1];
           correctTimeProvided = true;
@@ -435,7 +433,7 @@ client.on("message", (msg) => {
       catch (error) {
         console.log(error);
         msg.channel.send(
-          "```Please sepecify time after the command.\nEx: " + prefix + "set article time hour 14:20```"
+          "```Please specify time after the command.\nEx: " + prefix + "set article time hour 14:20```"
         );
         displayDailyArticleTime = false;
       }
