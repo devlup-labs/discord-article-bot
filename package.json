@@ -1,22 +1,27 @@
 {
   "dependencies": {
-    "cronstrue": "^1.114.0",
-    "discord.js": "^13.0.1",
-    "dotenv": "^16.0.0",
+    "cronstrue": "^2.5.0",
+    "discord.js": "^13.7.0",
+    "dotenv": "^16.0.1",
     "fs": "^0.0.1-security",
     "googleapis": "^100.0.0",
     "lodash": "^4.17.21",
+<<<<<<< HEAD
     "node-fetch": "^3.2.3",
     "node-schedule": "^2.0.0",
     "request": "^2.88.2",
     "url-metadata": "^2.5.0"
+=======
+    "node-cron": "^3.0.0",
+    "node-schedule": "^2.1.0"
+>>>>>>> 08b84fd69f1d344da92680e1e634713aa8d5de29
   },
   "name": "discord-article-bot",
   "description": "basic bot template with command handler",
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
