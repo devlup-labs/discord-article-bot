@@ -115,5 +115,5 @@ dist
 
 .env
 
-#Api credentials
-.article-bot-database-2c885470e1c3 
+#Api credentials 
+google_sheets_api.json

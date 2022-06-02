@@ -180,7 +180,7 @@ function resetScheduler() {
   });
 }
 
-const serviceAccountKeyFile = "./article-bot-database-2c885470e1c3.json";
+const serviceAccountKeyFile = "./google_sheets_api.json";
 const sheetId = '19cKf8XBNbSXiQmfsVFT3F63__e_61H8w6iosU7hIKyM'
 const tabName = 'Sheet1'
 const range = 'A:C'
