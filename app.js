@@ -7,7 +7,7 @@ var articles = fs.readFileSync("articles.json");
 const urlMetadata = require('url-metadata');
 const { getPriority } = require("os");
 const request = require('request');
-const { url } = require("inspector");
+// const { url } = require("inspector");
 const {google}= require("googleapis")
 const dotenv = require('dotenv').config();
 const { scheduleJob } = require("node-schedule");
@@ -181,11 +181,11 @@ function resetScheduler() {
 }
 
 const serviceAccountKeyFile = "./google_sheets_api.json";
-const sheetId = '19cKf8XBNbSXiQmfsVFT3F63__e_61H8w6iosU7hIKyM'
-const tabName = 'Sheet1'
+const sheetId = dotenv.parsed.sheetId
+const tabName = dotenv.parsed.tabName
 const range = 'A:C'
 
-async function _getGoogleSheetClient() {
+async function getGoogleSheetClient() {
   const auth = new google.auth.GoogleAuth({
     keyFile: serviceAccountKeyFile,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
@@ -197,7 +197,7 @@ async function _getGoogleSheetClient() {
   });
 }
 
-async function _readGoogleSheet(googleSheetClient, sheetId, tabName, range) {
+async function readGoogleSheet(googleSheetClient, sheetId, tabName, range) {
   const res = await googleSheetClient.spreadsheets.values.get({
     spreadsheetId: sheetId,
     range: `${tabName}!${range}`,
@@ -230,22 +230,22 @@ async function _updateGoogleSheet(googleSheetClient, sheetId, tabName,rangeupdat
   })
 }
 
-async function main_getarticle(str_id) {
+async function getArticle(str_id) {
   // Generating google sheet client
-  const googleSheetClient = await _getGoogleSheetClient();
-  var data_onSheet =await _readGoogleSheet(googleSheetClient, sheetId, tabName, range);
-  idx=0
-  var flag = false
+  const googleSheetClient = await getGoogleSheetClient();
+  var data_onSheet =await readGoogleSheet(googleSheetClient, sheetId, tabName, range);
+  index_ofguildID=0
+  var guildid_flag = false
   data_onSheet.forEach((value,index) => {
     if (str_id == value[0]){
-      flag = true
-      idx = index
+      guildid_flag = true
+      index_ofguildID = index
     }
   })
-  if (flag){
+  if (guildid_flag){
     var time_sheet = {
-      hr : data_onSheet[idx][1],
-      min : data_onSheet[idx][2],
+      hr : data_onSheet[index_ofguildID][1],
+      min : data_onSheet[index_ofguildID][2],
     }
   }
   else{
@@ -257,20 +257,20 @@ async function main_getarticle(str_id) {
   return time_sheet;
 }
 
-async function main_setarticle(str_id,set_hr,set_min) {
-  const googleSheetClient = await _getGoogleSheetClient();
-  var data_onSheet =await _readGoogleSheet(googleSheetClient, sheetId, tabName, range);
-  idx=0
-  var flag = false
+async function setArticle(str_id,set_hr,set_min) {
+  const googleSheetClient = await getGoogleSheetClient();
+  var data_onSheet =await readGoogleSheet(googleSheetClient, sheetId, tabName, range);
+  index_ofguildID=0
+  var guildid_flag = false
   data_onSheet.forEach((value,index) => {
     if (str_id == value[0]){
-      flag = true
-      idx = index
+      guildid_flag = true
+      index_ofguildID = index
     }
   })
-  if (flag){
-    if(set_hr != parseInt(data_onSheet[idx][1]) || parseInt(set_min != data_onSheet[idx][2])){
-      row=idx+1
+  if (guildid_flag){
+    if(set_hr != parseInt(data_onSheet[index_ofguildID][1]) || parseInt(set_min != data_onSheet[index_ofguildID][2])){
+      row=index_ofguildID+1
       rangeupdate = `B${row}`
       newdata = [
         [set_hr,set_min]
@@ -348,11 +348,11 @@ client.on("message", (msg) => {
         });
       } else {
         if (msgRecievied[2] == "time") {
-          let hr2;
-          main_getarticle((msg.guild.id).toString()).then(response => { hr2 =  response })
+          let hr_OnSheet;
+          getArticle((msg.guild.id).toString()).then(response => { hr_OnSheet =  response })
           setTimeout(()=>{
-          rule.hour = parseInt(hr2.hr);
-          rule.minute = parseInt(hr2.min);
+          rule.hour = parseInt(hr_OnSheet.hr);
+          rule.minute = parseInt(hr_OnSheet.min);
           },1300)
           
           setTimeout(() =>{
@@ -420,7 +420,7 @@ client.on("message", (msg) => {
           let str_id=guildid.toString()
           set_hr=time[0]
           set_min=time[1]
-          main_setarticle(str_id,set_hr,set_min)
+          setArticle(str_id,set_hr,set_min)
           displayDailyArticleTime = true;
           rule.hour = time[0];
           rule.minute = time[1];
