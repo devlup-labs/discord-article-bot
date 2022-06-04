@@ -4,13 +4,8 @@ var _ = require("lodash");
 var cronstrue = require("cronstrue");
 const schedule = require("node-schedule");
 var articles = fs.readFileSync("articles.json");
-const urlMetadata = require('url-metadata');
-const { getPriority } = require("os");
-const request = require('request');
-// const { url } = require("inspector");
 const {google}= require("googleapis")
 const dotenv = require('dotenv').config();
-const { scheduleJob } = require("node-schedule");
 
 // parsing articles.json
 articles = JSON.parse(articles);
