@@ -58,7 +58,7 @@ var command =
   "ex: " + "`" + prefix + "set article time 14: 20`, this will give the daily article at 2:20 pm";
 
 // embed command message
-const exampleEmbed = new Discord.MessageEmbed()
+const getHelpEmbed = new Discord.MessageEmbed()
   .setColor("#FF3F3F")
   .setTitle("readsomethinggreat")
   .setURL("https://www.readsomethinggreat.com/")
@@ -139,12 +139,11 @@ function BMCLinkScheduler() {
           ) || guild.channel.cache.first();
         if (channel) {
           channel.send("**Buy me a Coffee link**- " + dotenv.parsed.BMC_Link);
-          console.log("link send");
         } else {
-          console.log("link not send");
+          console.log("There is no channel for the link to send");
         }
       } catch (err) {
-        console.log('error is there');
+        console.log(err);
       }
     });
   });
@@ -307,7 +306,7 @@ client.on("message", (msg) => {
 
   }
   if (msg.content === prefix + "get help") {
-    msg.channel.send({ embeds: [exampleEmbed] })
+    msg.channel.send({ embeds: [getHelpEmbed] })
   }
 
   if (
