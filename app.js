@@ -178,7 +178,6 @@ async function resetScheduler() {
     }
     console.log("sent daily article succesfully");
 
-    articleLink = fetchRandomArticle("WILDCARD");
     client.guilds.cache.each((guild) => {
       try {
         const channel =
