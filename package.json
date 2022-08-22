@@ -5,7 +5,7 @@
     "dotenv": "^16.0.1",
     "fs": "^0.0.1-security",
     "google-spreadsheet": "^3.3.0",
-    "googleapis": "^105.0.0",
+    "googleapis": "^107.0.0",
     "lodash": "^4.17.21",
     "node-schedule": "^2.1.0"
   },
