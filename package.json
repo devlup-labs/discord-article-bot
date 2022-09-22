@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "cronstrue": "^2.11.0",
-    "discord.js": "^13.8.1",
+    "discord.js": "^14.4.0",
     "dotenv": "^16.0.1",
     "fs": "^0.0.1-security",
     "google-spreadsheet": "^3.3.0",
